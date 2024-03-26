@@ -1,0 +1,53 @@
+/Client - Post
+{
+	name
+	email
+	number
+	status
+	vehicle
+	plate
+}
+
+/Client - Patch
+(send webSocket)
+{
+	status
+}
+
+/Client - Get
+headers
+{
+	page
+	count
+}
+
+/Client - Get
+headers
+{
+	id
+}
+
+/Location - Patch
+{
+	plate
+	lastLocation
+}
+
+/Event - Post
+{
+	plate
+	arised
+	readings[]
+}
+
+/Event - Get
+headers
+{
+	plate
+}
+
+/Event - Delete
+(and updates status)
+{
+	late
+}
