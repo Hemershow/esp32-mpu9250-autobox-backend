@@ -7,7 +7,7 @@
     "node": "18"
   },
   "scripts": {
-    "start": "nodemon index.js", 
+    "start": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsup src"
   },
@@ -19,9 +19,13 @@
     "config": "^3.3.9",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "express": "^4.18.2",
+    "express": "^4.19.2",
+    "index.js": "^0.0.3",
     "mongoose": "^7.4.3",
     "nodemon": "^3.0.1",
-    "sharp": "^0.33.2"
+    "sharp": "^0.33.2",
+    "touch": "^3.1.0",
+    "websocket": "^1.0.34",
+    "ws": "^8.16.0"
   }
 }

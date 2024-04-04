@@ -5,6 +5,10 @@ const { initializeWebSocketServer } = require('./config/websocketManager');
 
 const app = express();
 
+app.get("/", (req, res) => { 
+    res.send("Express on Vercel");
+ }); 
+
 app.use(cors({ origin: '*' }));
 
 require('./startup/db')();
