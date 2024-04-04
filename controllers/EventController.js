@@ -1,11 +1,12 @@
 const Event = require('../models/Event');
 const MpuState = require('../models/MpuState');
+const { sendMessageToAllClients } = require('../config/websocketManager');
 
 class EventController{
     static async CreateEvent(req, res){
-        const { plate, readingLenght, arised, readings } = req.body;
+        const { plate, readingLength, arised, readings } = req.body;
 
-        if(!plate || !readingLenght || !arised || !readings) 
+        if(!plate || !readingLength || !arised || !readings) 
         {
             return res.status(400)
                 .send({ message: "One or more elements were not provided" })
@@ -16,23 +17,39 @@ class EventController{
 
         if (fatalityLikelyhood < 5)
             fatalityLikelyhood = 4;
-        if (fatalityLikelyhood > 95)
-            fatalityLikelyhood = 96;
+        if (fatalityLikelyhood > 99)
+            fatalityLikelyhood = 99;
 
         let mpuStates = readings.map(item => new MpuState(item.q0, item.q1, item.q2, item.q3, item.maxAcceleration, item.timestamp));
         let mpuStatesInterpolated = interpolateMpuStates(mpuStates);
-        
-		const event = new Event({
+
+		const event = {
             plate: plate,
-            readingLenght: readingLenght,
+            readingLength: readingLength,
             arised: arised,
             impactSpeed: impactSpeed,
             fatalityLikelyhood: fatalityLikelyhood,
             readings: mpuStatesInterpolated
-        });
+        };
 
         try {
-            await event.save();
+
+            await Event.findOneAndUpdate(
+                { plate: plate }, 
+                { $set: event }, 
+                {
+                    new: true, 
+                    upsert: true, 
+                    runValidators: true 
+                }
+            );
+
+            const eventMessage = {
+                plate: event.plate
+            }
+
+            sendMessageToAllClients({ type: "eventUpdate", data: eventMessage });
+
             return res.status(201).send({ 
                 message: "Event created successfully",
                 object: event
@@ -46,7 +63,7 @@ class EventController{
         const plate = req.params;
 
         try {
-            const event = await Event.findOne({ 'plate': plate });
+            const event = await Event.findOne({ 'plate': plate.plate });
     
             if (!event) {
                 return res.status(404).send({ message: "Event not found" });
@@ -55,24 +72,6 @@ class EventController{
             return res.status(200).send(event);
         } catch (error) {
             console.error(error);
-            return res.status(500).send({ message: "Something failed" });
-        }
-    }
-
-    static async DeleteEvent(req, res) {
-        const plate = req.params;
-    
-        try {
-            const event = await Event.findOne({ 'plate': plate });
-
-            if (!event) {
-                return res.status(404).send({ message: "Event not found" });
-            }
-            
-            // 
-
-            return res.status(200).send({ message: "Event deleted successfully" });
-        } catch (error) {
             return res.status(500).send({ message: "Something failed" });
         }
     }

@@ -4,9 +4,9 @@ const ClientController = require('../controllers/ClientController');
 
 router
     .post('/', ClientController.CreateClient)
-    .patch('/', ClientController.UpdateStatus)
     .patch('/:plate', ClientController.UpdateLocation)
     .get('/:id', ClientController.GetClient)
-    .get('/:page&:limit', ClientController.GetClients)
+    .get('/:page/:limit', ClientController.GetClients)
+    .get('/:page/:limit/:search', ClientController.GetClientsWithSearch)
 
 module.exports = router;

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const Client = mongoose.model('Client', {    
+const clientSchema = new Schema({
     name: String,
     email: String,
     number: String,
@@ -10,5 +11,13 @@ const Client = mongoose.model('Client', {
     vehicle: String,
     plate: String
 });
+
+clientSchema.index({
+    vehicle: 'text',
+    plate: 'text',
+    name: 'text'
+});
+
+const Client = mongoose.model('Client', clientSchema);
 
 module.exports = Client;

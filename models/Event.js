@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const Event = mongoose.model('Event', {    
     plate: String,
-    readingLenght: Number,
+    readingLength: Number,
     arised: Date,
     fatalityLikelyhood: Number,
     impactSpeed: Number,
