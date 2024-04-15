@@ -29,8 +29,7 @@ class ClientController{
     }
 
     static async UpdateLocation(req, res) {
-        const { plate } = req.params;
-        const { location } = req.body;
+        const { plate, location } = req.body;
 
         if(!location) 
         {
