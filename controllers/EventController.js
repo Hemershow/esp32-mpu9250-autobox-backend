@@ -1,5 +1,6 @@
 const Event = require('../models/Event');
 const MpuState = require('../models/MpuState');
+const Client = require("../models/Client");
 const { sendMessageToAllClients } = require('../config/websocketManager');
 
 class EventController{
@@ -43,6 +44,13 @@ class EventController{
                     runValidators: true 
                 }
             );
+
+            var clientId = (await Client.findOne({ 'plate': plate })).id;
+            
+            await Client.findByIdAndUpdate(clientId, {
+                status: "Em Crise",
+                lastUpdated: new Date()
+            });
 
             const eventMessage = {
                 plate: event.plate

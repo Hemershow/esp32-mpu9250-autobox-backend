@@ -16,6 +16,7 @@ class ClientController{
             email: email,
             number: number,
             vehicle: vehicle,
+            status: "Sem Sinal",
             plate: plate
         });
 
@@ -42,6 +43,7 @@ class ClientController{
             
             const client = await Client.findByIdAndUpdate(clientId, {
                 lastLocation: location,
+                status: "Rodando",
                 lastUpdated: new Date()
             });
     
