@@ -4,7 +4,7 @@ const ClientController = require('../controllers/ClientController');
 
 router
     .post('/', ClientController.CreateClient)
-    .patch('/:plate', ClientController.UpdateLocation)
+    .patch('/', ClientController.UpdateLocation)
     .get('/notifications', ClientController.GetNotifications)
     .get('/:id', ClientController.GetClient)
     .get('/:page/:limit', ClientController.GetClients)
