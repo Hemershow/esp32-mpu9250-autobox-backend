@@ -84,6 +84,21 @@ class ClientController{
         }
     }
 
+    static async GetNotifications(req, res) {
+        try {
+            const clients = await Client.find({ status: "Em Crise"})
+
+            return res.status(200).json({
+                notifications: clients.map(c => [c.plate, c.status])
+            })
+        } catch (error) {
+            return res.status(500).send({ 
+                message: "Something failed",
+                errors: error.message
+            });
+        }
+    }
+
     static async GetClients(req, res) {
         const { page, limit } = req.params;
 
