@@ -56,7 +56,7 @@ class ClientController{
                 plate: client.plate,
                 location: location
             }
-
+            console.log(statusUpdateMessage)
             // sendMessageToAllClients({ type: "locationUpdate", data: statusUpdateMessage });
             HostedService.notifyHostedService({ type: "locationUpdate", data: statusUpdateMessage })
 
