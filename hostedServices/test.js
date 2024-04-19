@@ -31,8 +31,9 @@ function checkIfExpired() {
     const statusClients = getClientStatus();
 
     updateClientStatus(statusClients.map((client) => {
-        if (new Date().getTime() - new Date(client.lastUpdated).getTime() > 13000 &&
+        if ((new Date().getTime() - new Date(client.lastUpdated).getTime() > 13000 || client.lastUpdated == undefined) &&
             client.notification.type == "eventUpdate") {
+            console.log(client)
             client.notification = {
                 type: "lostSignal",
                 data: {
@@ -62,11 +63,19 @@ setInterval(() => {
 module.exports = {
     notifyHostedService: function doSomething(notification) {
         const allClients = getClientStatus(); // Assuming getClientStatus returns an array of clients
-
+        console.log("here")
         const updatedClients = allClients.map(client => {
-            if (client.lastLocation.plate === notification.data.plate &&
-                new Date().getTime() - new Date(client.lastUpdated).getTime() < 13000 &&
+            console.log("aaaaaaaa");
+            console.log(client.plate);
+            console.log(client.lastUpdated)
+            console.log(client.plate === notification.data.plate);
+            console.log((new Date().getTime() - new Date(client.lastUpdated).getTime() < 13000 || client.lastUpdated == undefined));
+            console.log(client.notification.type === "lostSignal");
+            console.log("bbbbbb");
+            if (client.plate === notification.data.plate &&
+                (new Date().getTime() - new Date(client.lastUpdated).getTime() < 13000 || client.lastUpdated == undefined) &&
                 client.notification.type === "lostSignal") {
+                console.log("Entrei");
                 client.notification = {
                     type: "eventUpdate",
                     data: {
@@ -74,10 +83,13 @@ module.exports = {
                         location: client.lastLocation,
                     }
                 };
+
             }
             return client;
         });
 
+        console.log("KKKKKKKKKKKKKKKKKKKKK")
+        console.log(updatedClients)
         updateClientStatus(updatedClients); // Update the status of all clients
 
         const updatedClient = updatedClients.find(client =>

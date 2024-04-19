@@ -30,6 +30,7 @@ class ClientController{
     }
 
     static async UpdateLocation(req, res) {
+        console.log(req.body)
         const { plate, location } = req.body;
         console.log("oi");
 
@@ -52,10 +53,12 @@ class ClientController{
                 return res.status(404).send({ message: "Client not found" });
             }
 
+            console.log("h")
             const statusUpdateMessage = {
                 plate: client.plate,
                 location: location
             }
+            console.log("tete")
             console.log(statusUpdateMessage)
             // sendMessageToAllClients({ type: "locationUpdate", data: statusUpdateMessage });
             HostedService.notifyHostedService({ type: "locationUpdate", data: statusUpdateMessage })
