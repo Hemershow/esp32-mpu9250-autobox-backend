@@ -11,7 +11,7 @@ async function fillStatus() {
                 lastUpdated: client.lastUpdated,
                 lastLocation: client.lastLocation,
                 notification: {
-                    type: "eventUpdate",
+                    type: client.status != "Em Crise" ? "eventUpdate" : "",
                     data: {
                         plate: client.plate,
                         location: client.lastLocation,
@@ -29,11 +29,9 @@ async function fillStatus() {
 
 function checkIfExpired() {
     const statusClients = getClientStatus();
-
     updateClientStatus(statusClients.map((client) => {
         if ((new Date().getTime() - new Date(client.lastUpdated).getTime() > 13000 || client.lastUpdated == undefined) &&
             client.notification.type == "eventUpdate") {
-            console.log(client)
             client.notification = {
                 type: "lostSignal",
                 data: {
@@ -63,32 +61,24 @@ setInterval(() => {
 module.exports = {
     notifyHostedService: function doSomething(notification) {
         const allClients = getClientStatus(); // Assuming getClientStatus returns an array of clients
-        console.log("here")
         const updatedClients = allClients.map(client => {
-            if (client.plate === notification.data.plate &&
-                (new Date().getTime() - new Date(client.lastUpdated).getTime() < 13000 || client.lastUpdated == undefined) &&
-                client.notification.type === "lostSignal") {
-                console.log("Entrei");
-                client.notification = {
-                    type: "eventUpdate",
-                    data: {
-                        plate: client.plate,
-                        location: client.lastLocation,
-                    }
-                };
+            if (client.plate === notification.data.plate) {
+                client.lastUpdated = new Date(),
+                    client.notification = {
+                        type: "eventUpdate",
+                        data: {
+                            plate: client.plate,
+                            location: client.lastLocation,
+                        }
+                    };
 
             }
             return client;
         });
 
-        console.log(updatedClients)
         updateClientStatus(updatedClients); // Update the status of all clients
-        console.log()
 
-        const updatedClient = updatedClients.find(client =>
-            client.plate === notification.data.plate &&
-            client.notification.type === "eventUpdate"
-        );
+        const updatedClient = updatedClients.find(client => client.plate === notification.data.plate);
 
         if (updatedClient) {
             sendMessageToAllClients(updatedClient.notification); // Send message to all clients
