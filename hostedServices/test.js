@@ -65,13 +65,6 @@ module.exports = {
         const allClients = getClientStatus(); // Assuming getClientStatus returns an array of clients
         console.log("here")
         const updatedClients = allClients.map(client => {
-            console.log("aaaaaaaa");
-            console.log(client.plate);
-            console.log(client.lastUpdated)
-            console.log(client.plate === notification.data.plate);
-            console.log((new Date().getTime() - new Date(client.lastUpdated).getTime() < 13000 || client.lastUpdated == undefined));
-            console.log(client.notification.type === "lostSignal");
-            console.log("bbbbbb");
             if (client.plate === notification.data.plate &&
                 (new Date().getTime() - new Date(client.lastUpdated).getTime() < 13000 || client.lastUpdated == undefined) &&
                 client.notification.type === "lostSignal") {
@@ -88,12 +81,12 @@ module.exports = {
             return client;
         });
 
-        console.log("KKKKKKKKKKKKKKKKKKKKK")
         console.log(updatedClients)
         updateClientStatus(updatedClients); // Update the status of all clients
+        console.log()
 
         const updatedClient = updatedClients.find(client =>
-            client.lastLocation.plate === notification.data.plate &&
+            client.plate === notification.data.plate &&
             client.notification.type === "eventUpdate"
         );
 
