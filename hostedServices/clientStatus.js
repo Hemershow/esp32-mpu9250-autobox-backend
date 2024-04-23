@@ -1,5 +1,6 @@
 let clientStatus = [
     {
+        id: 0,
         plate: "absc213",
         lastUpdated: 1978236123,
         lastLocation: "",

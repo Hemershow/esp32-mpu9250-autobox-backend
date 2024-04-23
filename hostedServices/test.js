@@ -1,3 +1,4 @@
+const Logger = require("nodemon/lib/utils/log");
 const { sendMessageToAllClients } = require("../config/websocketManager");
 const Client = require("../models/Client");
 const { getClientStatus, updateClientStatus } = require("./clientStatus");
@@ -7,6 +8,7 @@ async function fillStatus() {
         const clients = await Client.find();
         const newClientStatus = clients.map((client) => {
             newStatus = {
+                id: client.id,
                 plate: client.plate,
                 lastUpdated: client.lastUpdated,
                 lastLocation: client.lastLocation,
@@ -27,24 +29,31 @@ async function fillStatus() {
     }
 }
 
-function checkIfExpired() {
+async function checkIfExpired() {
     const statusClients = getClientStatus();
-    updateClientStatus(statusClients.map((client) => {
+    await Promise.all(statusClients.map(async (client) => {
         if ((new Date().getTime() - new Date(client.lastUpdated).getTime() > 13000 || client.lastUpdated == undefined) &&
             client.notification.type == "eventUpdate") {
+            client.lastUpdated = new Date();
             client.notification = {
                 type: "lostSignal",
                 data: {
                     plate: client.plate,
                     location: client.lastLocation,
                 }
-            }
+            };
+
+            await Client.findByIdAndUpdate(client.id, {
+                lastLocation: client.lastLocation,
+                status: "Sem Sinal",
+                lastUpdated: client.lastUpdated
+            });
+
             sendMessageToAllClients(client.notification);
         }
-
-        return client;
     }));
 }
+
 
 setInterval(() => {
     checkIfExpired();
@@ -59,19 +68,19 @@ setInterval(() => {
 })();
 
 module.exports = {
-    notifyHostedService: function doSomething(notification) {
+    notifyHostedService: async function doSomething(notification) {
+        console.log("atualizei hehe" + notification.data.plate);
         const allClients = getClientStatus(); // Assuming getClientStatus returns an array of clients
         const updatedClients = allClients.map(client => {
             if (client.plate === notification.data.plate) {
                 client.lastUpdated = new Date(),
-                    client.notification = {
-                        type: "eventUpdate",
-                        data: {
-                            plate: client.plate,
-                            location: client.lastLocation,
-                        }
-                    };
-
+                client.notification = {
+                    type: "eventUpdate",
+                    data: {
+                        plate: client.plate,
+                        location: client.lastLocation,
+                    }
+                };
             }
             return client;
         });
@@ -79,6 +88,12 @@ module.exports = {
         updateClientStatus(updatedClients); // Update the status of all clients
 
         const updatedClient = updatedClients.find(client => client.plate === notification.data.plate);
+        
+        await Client.findByIdAndUpdate(updatedClient.id, {
+            lastLocation: updatedClient.lastLocation,
+            status: "Rodando",
+            lastUpdated: updatedClient.lastUpdated
+        });
 
         if (updatedClient) {
             sendMessageToAllClients(updatedClient.notification); // Send message to all clients
