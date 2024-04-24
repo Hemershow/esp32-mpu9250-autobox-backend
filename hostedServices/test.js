@@ -69,8 +69,7 @@ setInterval(() => {
 
 module.exports = {
     notifyHostedService: async function doSomething(notification) {
-        console.log("atualizei hehe" + notification.data.plate);
-        const allClients = getClientStatus(); // Assuming getClientStatus returns an array of clients
+        const allClients = getClientStatus(); 
         const updatedClients = allClients.map(client => {
             if (client.plate === notification.data.plate) {
                 client.lastUpdated = new Date(),
