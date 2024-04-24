@@ -64,7 +64,7 @@ function captureFrame(index, plate, q0, q1, q2, q3) {
     return new Promise((resolve, reject) => {
         const task = async (page) => {
             try {
-                let url = `http://localhost:6749/${q2},${q3},${q1},${q0}`;
+                let url = `https://autobox-videobackend.onrender.com/${q2},${q3},${q1},${q0}`;
                 await page.goto(url, { waitUntil: 'networkidle0' });
                 const screenshot = await page.screenshot({ type: 'png' });
                 const filename = plate + "-" + index + ".png";
@@ -205,7 +205,7 @@ module.exports = {
                 await createVideoFromImages(videoImages, outputFile, fps);
             } catch (error) {
             }
-            console.log("Video creation successful");
+            console.log("Video created successfully");
     
             deleteFiles(videoImages).then(() => {
                 console.log('All files deleted successfully');
