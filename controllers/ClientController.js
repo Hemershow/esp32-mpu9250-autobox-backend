@@ -1,5 +1,6 @@
 const Client = require("../models/Client");
 const { sendMessageToAllClients } = require('../config/websocketManager');
+const HostedService = require('../hostedServices/test');
 
 class ClientController{
     static async CreateClient(req, res){
@@ -30,6 +31,7 @@ class ClientController{
 
     static async UpdateLocation(req, res) {
         const { plate, location } = req.body;
+
         if(!location) 
         {
             return res.status(400)
@@ -49,13 +51,16 @@ class ClientController{
                 return res.status(404).send({ message: "Client not found" });
             }
 
+            console.log("h")
             const statusUpdateMessage = {
                 plate: client.plate,
                 location: location
             }
+            console.log("tete")
+            console.log(statusUpdateMessage)
+            // sendMessageToAllClients({ type: "locationUpdate", data: statusUpdateMessage });
+            HostedService.notifyHostedService({ type: "locationUpdate", data: statusUpdateMessage })
 
-            sendMessageToAllClients({ type: "locationUpdate", data: statusUpdateMessage });
-    
             return res.status(200).send({ message: "Client updated successfully" });
         } catch (error) {
             return res.status(500).send({ 
