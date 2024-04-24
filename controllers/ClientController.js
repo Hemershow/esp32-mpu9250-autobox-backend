@@ -30,7 +30,6 @@ class ClientController{
 
     static async UpdateLocation(req, res) {
         const { plate, location } = req.body;
-
         if(!location) 
         {
             return res.status(400)
@@ -120,10 +119,18 @@ class ClientController{
     }
 
     static async GetClientsWithSearch(req, res) {
-        const { page, limit, search } = req.params;
+        let { page, limit, search, status } = req.params;
         
+        if (search == "ALL")
+        {
+            search = "";
+        }
+
         try {
-            const clients = await Client.find({
+            let clients;
+            if (status == "Todos")
+            {
+                clients = await Client.find({
                     $or: [
                         { vehicle: { $regex: search, $options: 'i' } },
                         { plate: { $regex: search, $options: 'i' } },
@@ -133,6 +140,23 @@ class ClientController{
                 .limit(limit * 1)
                 .skip((page - 1) * limit)
                 .exec();
+            }
+            else {
+                clients = await Client.find({
+                    $and: [
+                        {
+                            $or: [
+                                { vehicle: { $regex: search, $options: 'i' } },
+                                { plate: { $regex: search, $options: 'i' } },
+                                { name: { $regex: search, $options: 'i' } }
+                            ]
+                        },
+                        { status: status }
+                    ]})
+                    .limit(limit * 1)
+                    .skip((page - 1) * limit)
+                    .exec();
+            }
     
             const count = clients.length;
     

@@ -15,17 +15,28 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "body-parser": "^1.20.2",
+    "canvas": "^2.11.2",
+    "canvas-renderer": "^2.2.1",
+    "canvasrenderer": "^0.1.5",
     "config": "^3.3.9",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.19.2",
+    "ffmpeg-binaries": "^3.2.2-3",
+    "fluent-ffmpeg": "^2.1.2",
+    "gl": "^8.0.2",
     "index.js": "^0.0.3",
     "mongoose": "^7.4.3",
     "nodemon": "^3.0.1",
+    "puppeteer": "^22.6.5",
     "sharp": "^0.33.2",
+    "three": "^0.163.0",
     "touch": "^3.1.0",
+    "videoshow": "^0.1.12",
     "websocket": "^1.0.34",
+    "worker-thread": "^1.1.0",
     "ws": "^8.16.0"
   }
 }
