@@ -21,6 +21,7 @@
     "canvas": "^2.11.2",
     "canvas-renderer": "^2.2.1",
     "canvasrenderer": "^0.1.5",
+    "chromium": "^3.0.3",
     "config": "^3.3.9",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
