@@ -15,7 +15,8 @@ const clientSchema = new Schema({
 clientSchema.index({
     vehicle: 'text',
     plate: 'text',
-    name: 'text'
+    name: 'text',
+    status: 'text'
 });
 
 const Client = mongoose.model('Client', clientSchema);

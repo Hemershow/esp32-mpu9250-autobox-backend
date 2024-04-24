@@ -8,6 +8,6 @@ router
     .get('/notifications', ClientController.GetNotifications)
     .get('/:id', ClientController.GetClient)
     .get('/:page/:limit', ClientController.GetClients)
-    .get('/:page/:limit/:search', ClientController.GetClientsWithSearch)
+    .get('/:page/:limit/:search/:status', ClientController.GetClientsWithSearch)
 
 module.exports = router;
