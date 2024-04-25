@@ -25,7 +25,8 @@ async function getOrCreatePage() {
 async function launchBrowser() {
     if (!browserInstance) {
         browserInstance = await puppeteer.launch({
-            headless: true
+            headless: true,
+            
         });
     }
 }
