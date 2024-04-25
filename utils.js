@@ -66,7 +66,7 @@ function captureFrame(index, plate, q0, q1, q2, q3) {
         const task = async (page) => {
             try {
                 let url = `https://autobox-videobackend.onrender.com/${q2},${q3},${q1},${q0}`;
-                await page.goto(url, { waitUntil: 'networkidle0' });
+                await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000}).catch(e => console.log(`Failed to load page: ${e.message}`));;
                 const screenshot = await page.screenshot({ type: 'png' });
                 const filename = plate + "-" + index + ".png";
                 fs.writeFileSync(filename, screenshot);
@@ -218,15 +218,11 @@ function interpolateMpuStates(mpuStates) {
 
 module.exports = {
     saveVideo: async function saveVideo(event) {
-        console.log("Deleting old files if needed");
         deleteFilesWithContent(event.plate);
-        console.log("Deleted them");
-        
+
         let videoImages = [];
         let outputFile = `${event.plate}.mp4`;
         let fps = event.readings.length / event.readingLength * 1000;
-    
-        console.log("Initializing");
 
         await initialize();
     

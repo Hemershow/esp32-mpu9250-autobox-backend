@@ -49,8 +49,6 @@ class EventController{
                 }
             );
 
-
-            console.log("Creating video")
             utils.saveVideo(event);
 
             var clientId = (await Client.findOne({ 'plate': plate })).id;
