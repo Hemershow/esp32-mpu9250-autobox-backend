@@ -122,6 +122,39 @@ function encodeFileToBase64(filePath) {
     });
 }
 
+function deleteFilesWithContent(searchString) {
+    const directory = __dirname;  
+    fs.readdir(directory, { withFileTypes: true }, (err, files) => {
+        if (err) {
+            console.error('Failed to read directory:', err);
+            return;
+        }
+
+        files.forEach(file => {
+            const filePath = path.join(directory, file.name);
+            if (file.isDirectory()) {
+            } else {
+                fs.readFile(filePath, 'utf8', (err, data) => {
+                    if (err) {
+                        console.error('Failed to read file:', err);
+                        return;
+                    }
+
+                    if (data.includes(searchString)) {
+                        fs.unlink(filePath, (err) => {
+                            if (err) {
+                                console.error('Failed to delete file:', err);
+                            } else {
+                                console.log(`Deleted file: ${filePath}`);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    });
+}
+
 function slerp(mpuState1, mpuState2, t) {
     let w1 = mpuState1.q0;
     let x1 = mpuState1.q1;
@@ -185,22 +218,34 @@ function interpolateMpuStates(mpuStates) {
 
 module.exports = {
     saveVideo: async function saveVideo(event) {
+        console.log("Deleting old files if needed");
+        deleteFilesWithContent(event.plate);
+        console.log("Deleted them");
+        
         let videoImages = [];
         let outputFile = `${event.plate}.mp4`;
         let fps = event.readings.length / event.readingLength * 1000;
     
+        console.log("Initializing");
+
         await initialize();
     
         const capturePromises = [];
+
         for (let i = 0; i < event.readings.length; i++) {
             let q = event.readings[i];
             capturePromises.push(captureFrame(i, event.plate, q.q0, q.q1, q.q2, q.q3));
         }
-    
+
+        console.log("Finished creating promises")
+
         try {
             const filenames = await Promise.all(capturePromises);
+            
             videoImages.push(...filenames);
-    
+
+            console.log("Closing browser");
+
             await browserInstance.close();
             try {
                 await createVideoFromImages(videoImages, outputFile, fps);

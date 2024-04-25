@@ -12,9 +12,11 @@ class EventController{
         if(!plate || !readingLength || !arised || !readings) 
         {
             return res.status(400)
-                .send({ message: "One or more elements were not provided" })
+            .send({ message: "One or more elements were not provided" })
         }
 
+        console.log("Creating event with plate: " + plate);
+        
         const impactSpeed = (Math.max(...readings.map(o => o.maxAcceleration)) * 9.80665) * 3.6;
         let fatalityLikelyhood = 0.0106564 * Math.pow((impactSpeed*0.621371), 2.27587) - 3.38848;
 
@@ -47,6 +49,8 @@ class EventController{
                 }
             );
 
+
+            console.log("Creating video")
             utils.saveVideo(event);
 
             var clientId = (await Client.findOne({ 'plate': plate })).id;
