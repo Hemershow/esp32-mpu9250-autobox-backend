@@ -162,7 +162,7 @@ class ClientController{
                     .exec();
             }
     
-            const count = clients.length;
+            const count = await Client.countDocuments();
     
             return res.status(200).json({
                 clients,
