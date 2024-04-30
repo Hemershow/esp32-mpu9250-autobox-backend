@@ -49,6 +49,12 @@ class EventController{
                 }
             );
 
+            const eventMessage = {
+                plate: event.plate
+            }
+
+            sendMessageToAllClients({ type: "crashEvent", data: eventMessage });
+
             var base64Video = await utils.getVideo(event);
             
             const newVideo = {
@@ -73,17 +79,12 @@ class EventController{
                 lastUpdated: new Date()
             });
 
-            const eventMessage = {
-                plate: event.plate
-            }
-
-            sendMessageToAllClients({ type: "eventUpdate", data: eventMessage });
-
             return res.status(201).send({ 
                 message: "Event created successfully",
                 object: event
             });
         } catch (error) {
+            console.error("Error occurred:", error);
             return res.status(500).send({ message: "Something failed" + error })
         }
     }
