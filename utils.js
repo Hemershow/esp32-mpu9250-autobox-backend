@@ -8,151 +8,15 @@ const path = require('path');
 const videoshow = require('videoshow')
 const { exec } = require('child_process');
 const EventVideo = require('./models/EventVideo');
+const axios = require('axios');
 
-let browserInstance;
-let pagePool = [];
-const taskQueue = [];
-const maxPages = 20;
-
-async function getOrCreatePage() {
-    if (pagePool.length < maxPages) {
-        const page = await browserInstance.newPage();
-        page.isInUse = false;
-        pagePool.push(page);
-    }
-}
-
-async function launchBrowser() {
-    if (!browserInstance) {
-        browserInstance = await puppeteer.launch({
-            headless: true,
-            
-        });
-    }
-}
-
-async function processQueue() {
-    pagePool.forEach(async (page) => {
-        if (!page.isInUse && taskQueue.length > 0) {
-            const task = taskQueue.shift();
-            page.isInUse = true;
-            try {
-                await task(page);
-            } finally {
-                page.isInUse = false;
-                processQueue(); 
-            }
-        }
-    });
-}
-
-async function deleteFiles(videoImages) {
-    for (let i = 0; i < videoImages.length; i++) {
-        try {
-            await fsPromises.unlink(videoImages[i]);
-        } catch (err) {
-            console.error(`Error deleting file ${videoImages[i]}:`, err);
-        }
-    }
-}
-
-function enqueueTask(task) {
-    taskQueue.push(task);
-    processQueue(); 
-}
-
-function captureFrame(index, plate, q0, q1, q2, q3) {
-    return new Promise((resolve, reject) => {
-        const task = async (page) => {
-            try {
-                let url = `https://autobox-videobackend.onrender.com/${q2},${q3},${q1},${q0}`;
-                await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000}).catch(e => console.log(`Failed to load page: ${e.message}`));
-                const screenshot = await page.screenshot({ type: 'png' });
-                const filename = plate + "-" + index + ".png";
-                fs.writeFileSync(filename, screenshot);
-                resolve(filename);
-            } catch (error) {
-                reject(error);
-            }
-        };
-        enqueueTask(task);
-    });
-}
-
-async function initialize() {
-    await launchBrowser();
-    const pagePromises = [];
-    for (let i = 0; i < maxPages; i++) {
-        pagePromises.push(getOrCreatePage());
-    }
-    await Promise.all(pagePromises);
-}
-
-function createVideoFromImages(imagePaths, outputPath, fps) {
-  return new Promise((resolve, reject) => {
-      const images = imagePaths.join('|');
-      const command = `ffmpeg -framerate ${fps} -i "concat:${images}" -c:v libx264 -pix_fmt yuv420p ${outputPath}`;
-
-      exec(command, (error, stdout, stderr) => {
-          if (error) {
-              reject(error);
-              return;
-          }
-          if (stderr) {
-              reject(stderr);
-              return;
-          }
-          resolve();
-      });
-  })
-  .catch(error => {
-    }); 
-}
-
-function encodeFileToBase64(filePath) {
-    return new Promise((resolve, reject) => {
-        fs.readFile(filePath, (err, data) => {
-            if (err) {
-                reject(err);
-            } else {
-                const base64 = data.toString('base64');
-                resolve(base64);
-            }
-        });
-    });
-}
-
-function deleteFilesWithContent(searchString) {
-    const directory = __dirname;  
-    fs.readdir(directory, { withFileTypes: true }, (err, files) => {
-        if (err) {
-            console.error('Failed to read directory:', err);
-            return;
-        }
-
-        files.forEach(file => {
-            const filePath = path.join(directory, file.name);
-            if (file.isDirectory()) {
-            } else {
-                fs.readFile(filePath, 'utf8', (err, data) => {
-                    if (err) {
-                        console.error('Failed to read file:', err);
-                        return;
-                    }
-
-                    if (data.includes(searchString)) {
-                        fs.unlink(filePath, (err) => {
-                            if (err) {
-                                console.error('Failed to delete file:', err);
-                            } else {
-                                console.log(`Deleted file: ${filePath}`);
-                            }
-                        });
-                    }
-                });
-            }
-        });
-    });
+async function requestVideo(event) {
+  try {
+    const response = await axios.post(`${process.env.NGROK_VIDEO_URL}`, event);
+    return response;
+  } catch (error) {
+    console.error('Error getting video:', error);
+  }
 }
 
 function slerp(mpuState1, mpuState2, t) {
@@ -217,59 +81,9 @@ function interpolateMpuStates(mpuStates) {
 }
 
 module.exports = {
-    saveVideo: async function saveVideo(event) {
-        deleteFilesWithContent(event.plate);
-
-        let videoImages = [];
-        let outputFile = `${event.plate}.mp4`;
-        let fps = event.readings.length / event.readingLength * 1000;
-
-        await initialize();
-    
-        const capturePromises = [];
-
-        for (let i = 0; i < event.readings.length; i++) {
-            let q = event.readings[i];
-            capturePromises.push(captureFrame(i, event.plate, q.q0, q.q1, q.q2, q.q3));
-        }
-
-        console.log("Finished creating promises")
-
-        try {
-            const filenames = await Promise.all(capturePromises);
-            
-            videoImages.push(...filenames);
-
-            console.log("Closing browser");
-
-            await browserInstance.close();
-            try {
-                await createVideoFromImages(videoImages, outputFile, fps);
-            } catch (error) {
-            }
-            console.log("Video created successfully");
-    
-            deleteFiles(videoImages).then(() => {
-                console.log('All files deleted successfully');
-            }).catch(err => {
-                console.error('An error occurred:', err);
-            });
-
-            base64Video = await encodeFileToBase64(`${event.plate}.mp4`)
-
-            await EventVideo.findOneAndUpdate(
-                { plate: event.plate }, 
-                { plate: event.plate, data: base64Video }, 
-                { upsert: true, new: true } 
-            );
-
-            fs.unlinkSync(`${event.plate}.mp4`,function(err){
-                if(err) 
-                    return console.log(err);
-            });
-        } catch (error) {
-            console.error("An error occurred during processing:", error);
-        }
+    getVideo: async function getVideo(event)
+    {
+        return await requestVideo(event);
     },
     interpolate: function interpolateMpus(mpuStates)
     {

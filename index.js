@@ -9,6 +9,7 @@ const app = express();
 
 app.use(cors({ origin: '*' }));
 
+require('dotenv').config();
 require('./startup/db')();
 require('./startup/routes')(app);
 

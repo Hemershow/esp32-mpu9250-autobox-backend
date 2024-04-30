@@ -49,7 +49,22 @@ class EventController{
                 }
             );
 
-            utils.saveVideo(event);
+            var base64Video = await utils.getVideo(event);
+            
+            const newVideo = {
+                plate: plate,
+                data: base64Video
+            }
+
+            await EventVideo.findOneAndUpdate(
+                { plate: plate }, 
+                { $set: newVideo }, 
+                {
+                    new: true, 
+                    upsert: true, 
+                    runValidators: true 
+                }
+            );
 
             var clientId = (await Client.findOne({ 'plate': plate })).id;
             
