@@ -53,7 +53,7 @@ class EventController{
             
             const newVideo = {
                 plate: plate,
-                data: base64Video
+                data: base64Video.data
             }
 
             await EventVideo.findOneAndUpdate(
