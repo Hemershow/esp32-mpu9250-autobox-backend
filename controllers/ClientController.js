@@ -141,8 +141,6 @@ class ClientController{
                         { name: { $regex: search, $options: 'i' } }
                     ]
                 })
-                .limit(limit * 1)
-                .skip((page - 1) * limit)
                 .exec();
             }
             else {
@@ -157,12 +155,13 @@ class ClientController{
                         },
                         { status: status }
                     ]})
-                    .limit(limit * 1)
-                    .skip((page - 1) * limit)
                     .exec();
             }
     
-            const count = await Client.countDocuments();
+            const count = clients.length;
+
+            clients = clients
+                .slice((page - 1) * limit, (page - 1) * limit + limit)
     
             return res.status(200).json({
                 clients,
