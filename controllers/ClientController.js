@@ -96,7 +96,7 @@ class ClientController{
 
             for (let i = 0; i < clients.length; i++) {
                 const arised = await Event.findOne({ plate: clients[i].plate })
-                mappedClients.push([clients[i].plate, arised.arised])
+                mappedClients.push([clients[i].plate, clients[i].status, arised.arised])
             }
 
             return res.status(200).json({
