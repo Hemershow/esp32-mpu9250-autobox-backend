@@ -92,7 +92,7 @@ class ClientController{
             const clients = await Client.find({ status: "Em Crise"})
 
             return res.status(200).json({
-                notifications: clients.map(c => [c.plate, c.status])
+                notifications: clients.map(c => [c.plate, c.arised])
             })
         } catch (error) {
             return res.status(500).send({ 
