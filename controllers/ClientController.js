@@ -1,4 +1,5 @@
 const Client = require("../models/Client");
+const Event = require('../models/Event');
 const { sendMessageToAllClients } = require('../config/websocketManager');
 const HostedService = require('../hostedServices/test');
 
@@ -91,8 +92,15 @@ class ClientController{
         try {
             const clients = await Client.find({ status: "Em Crise"})
 
+            const mappedClients = []
+
+            for (let i = 0; i < clients.length; i++) {
+                const arised = await Event.findOne({ plate: clients[i].plate })
+                mappedClients.push([clients[i].plate, arised.arised])
+            }
+
             return res.status(200).json({
-                notifications: clients.map(c => [c.plate, c.arised])
+                notifications: mappedClients
             })
         } catch (error) {
             return res.status(500).send({ 
