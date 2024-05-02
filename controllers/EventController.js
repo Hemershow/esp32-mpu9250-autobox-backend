@@ -50,7 +50,8 @@ class EventController{
             );
 
             const eventMessage = {
-                plate: event.plate
+                plate: event.plate,
+                lastUpdated: arised
             }
 
             sendMessageToAllClients({ type: "crashEvent", data: eventMessage });

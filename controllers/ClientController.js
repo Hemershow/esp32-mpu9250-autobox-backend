@@ -53,7 +53,8 @@ class ClientController{
 
             const statusUpdateMessage = {
                 plate: client.plate,
-                location: location
+                location: location,
+                datetime: client.lastUpdated  
             }
 
             console.log(statusUpdateMessage)
