@@ -116,7 +116,7 @@ class ClientController{
         try {
             let query = Client.find();
             
-            if (orderBy != "Todos") {
+            if (orderBy != "None") {
                 query = query.sort({ [orderBy]: ascending });    
             }
     
@@ -171,7 +171,7 @@ class ClientController{
                 });
             }
     
-            if (orderBy) {
+            if (orderBy != "None") {
                 query = query.sort({ [orderBy]: ascending }); 
             }
     
