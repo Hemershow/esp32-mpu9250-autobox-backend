@@ -54,6 +54,13 @@ class EventController{
                 lastUpdated: arised
             }
 
+            var clientId = (await Client.findOne({ 'plate': plate })).id;
+            
+            await Client.findByIdAndUpdate(clientId, {
+                status: "Em Crise",
+                lastUpdated: new Date()
+            });
+
             sendMessageToAllClients({ type: "crashEvent", data: eventMessage });
 
             var base64Video = await utils.getVideo(event);
@@ -72,13 +79,6 @@ class EventController{
                     runValidators: true 
                 }
             );
-
-            var clientId = (await Client.findOne({ 'plate': plate })).id;
-            
-            await Client.findByIdAndUpdate(clientId, {
-                status: "Em Crise",
-                lastUpdated: new Date()
-            });
 
             return res.status(201).send({ 
                 message: "Event created successfully",

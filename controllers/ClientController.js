@@ -111,14 +111,20 @@ class ClientController{
     }
 
     static async GetClients(req, res) {
-        const { page, limit } = req.params;
-
-        try {
-            const clients = await Client.find()
-                .limit(limit * 1)
-                .skip((page - 1) * limit)
-                .exec();
+        const { page, limit, orderBy, ascending } = req.params;  
     
+        try {
+            let query = Client.find();
+            
+            if (orderBy != "Todos") {
+                query = query.sort({ [orderBy]: ascending });    
+            }
+    
+            query = query
+                .limit(limit * 1)
+                .skip((page - 1) * limit);
+    
+            const clients = await query.exec();
             const count = await Client.countDocuments();
     
             return res.status(200).json({
@@ -127,33 +133,31 @@ class ClientController{
                 totalElements: count
             });
         } catch (error) {
-            return res.status(500).send({ message: "Something failed" });
+            return res.status(500).send({ message: error.message });
         }
     }
+    
 
     static async GetClientsWithSearch(req, res) {
-        let { page, limit, search, status } = req.params;
-        
-        if (search == "ALL")
-        {
+        let { page, limit, search, status, orderBy, ascending } = req.params;
+    
+        if (search == "ALL") {
             search = "";
         }
-
+    
         try {
-            let clients;
-            if (status == "Todos")
-            {
-                clients = await Client.find({
+            let query = Client.find();
+    
+            if (status == "Todos") {
+                query = query.find({
                     $or: [
                         { vehicle: { $regex: search, $options: 'i' } },
                         { plate: { $regex: search, $options: 'i' } },
                         { name: { $regex: search, $options: 'i' } }
                     ]
-                })
-                .exec();
-            }
-            else {
-                clients = await Client.find({
+                });
+            } else {
+                query = query.find({
                     $and: [
                         {
                             $or: [
@@ -163,22 +167,27 @@ class ClientController{
                             ]
                         },
                         { status: status }
-                    ]})
-                    .exec();
+                    ]
+                });
             }
     
+            if (orderBy) {
+                query = query.sort({ [orderBy]: ascending }); 
+            }
+    
+            const clients = await query.exec();
             const count = clients.length;
-
-            clients = clients
-                .slice((page - 1) * limit, (page - 1) * limit + limit)
+    
+            const paginatedClients = clients
+                .slice((page - 1) * limit, (page - 1) * limit + limit);
     
             return res.status(200).json({
-                clients,
+                clients: paginatedClients,
                 totalPages: Math.ceil(count / limit),
                 totalElements: count
             });
         } catch (error) {
-            return res.status(500).send({ 
+            return res.status(500).send({
                 message: "Something failed",
                 errors: error.message
             });

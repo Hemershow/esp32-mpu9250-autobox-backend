@@ -7,7 +7,7 @@ router
     .patch('/', ClientController.UpdateLocation)
     .get('/notifications', ClientController.GetNotifications)
     .get('/:id', ClientController.GetClient)
-    .get('/:page/:limit', ClientController.GetClients)
-    .get('/:page/:limit/:search/:status', ClientController.GetClientsWithSearch)
+    .get('/:page/:limit/:orderBy/:ascending', ClientController.GetClients)
+    .get('/:page/:limit/:search/:status/:orderBy/:ascending', ClientController.GetClientsWithSearch)
 
 module.exports = router;
