@@ -3,17 +3,16 @@ const Event = require('../models/Event');
 const { sendMessageToAllClients } = require('../config/websocketManager');
 const HostedService = require('../hostedServices/test');
 
-class ClientController{
-    static async CreateClient(req, res){
+class ClientController {
+    static async CreateClient(req, res) {
         const { name, email, number, vehicle, plate } = req.body;
 
-        if(!name || !email || !number || !vehicle || !plate) 
-        {
+        if (!name || !email || !number || !vehicle || !plate) {
             return res.status(400)
                 .send({ message: "One or more elements were not provided" })
         }
 
-		const client = new Client({
+        const client = new Client({
             name: name,
             email: email,
             number: number,
@@ -33,38 +32,36 @@ class ClientController{
     static async UpdateLocation(req, res) {
         const { plate, location } = req.body;
 
-        if(!location) 
-        {
+        if (!location) {
             return res.status(400)
                 .send({ message: "One or more elements were not provided" })
         }
 
         try {
             var clientId = (await Client.findOne({ 'plate': plate })).id;
-            
+
             const client = await Client.findByIdAndUpdate(clientId, {
                 lastLocation: location,
                 status: "Rodando",
                 lastUpdated: new Date()
             });
-    
+
             if (!client) {
                 return res.status(404).send({ message: "Client not found" });
             }
 
             const statusUpdateMessage = {
-                plate: client.plate,
-                location: location,
-                datetime: client.lastUpdated  
+                newClient: client,
+                datetime: client.lastUpdated
             }
 
             console.log(statusUpdateMessage)
-            
+
             HostedService.notifyHostedService({ type: "locationUpdate", data: statusUpdateMessage })
 
             return res.status(200).send({ message: "Client updated successfully" });
         } catch (error) {
-            return res.status(500).send({ 
+            return res.status(500).send({
                 message: "Something failed",
                 erros: error.message
             });
@@ -76,11 +73,11 @@ class ClientController{
 
         try {
             const client = await Client.findById(id);
-    
+
             if (!client) {
                 return res.status(404).send({ message: "Client not found" });
             }
-    
+
             return res.status(200).send(client);
         } catch (error) {
             console.error(error);
@@ -90,7 +87,7 @@ class ClientController{
 
     static async GetNotifications(req, res) {
         try {
-            const clients = await Client.find({ status: "Em Crise"})
+            const clients = await Client.find({ status: "Em Crise" })
 
             const mappedClients = []
 
@@ -103,7 +100,7 @@ class ClientController{
                 notifications: mappedClients
             })
         } catch (error) {
-            return res.status(500).send({ 
+            return res.status(500).send({
                 message: "Something failed",
                 errors: error.message
             });
@@ -111,22 +108,22 @@ class ClientController{
     }
 
     static async GetClients(req, res) {
-        const { page, limit, orderBy, ascending } = req.params;  
-    
+        const { page, limit, orderBy, ascending } = req.params;
+
         try {
             let query = Client.find();
-            
+
             if (orderBy != "None") {
-                query = query.sort({ [orderBy]: ascending });    
+                query = query.sort({ [orderBy]: ascending });
             }
-    
+
             query = query
                 .limit(limit * 1)
                 .skip((page - 1) * limit);
-    
+
             const clients = await query.exec();
             const count = await Client.countDocuments();
-    
+
             return res.status(200).json({
                 clients,
                 totalPages: Math.ceil(count / limit),
@@ -136,18 +133,18 @@ class ClientController{
             return res.status(500).send({ message: error.message });
         }
     }
-    
+
 
     static async GetClientsWithSearch(req, res) {
         let { page, limit, search, status, orderBy, ascending } = req.params;
-    
+
         if (search == "ALL") {
             search = "";
         }
-    
+
         try {
             let query = Client.find();
-    
+
             if (status == "Todos") {
                 query = query.find({
                     $or: [
@@ -170,17 +167,17 @@ class ClientController{
                     ]
                 });
             }
-    
+
             if (orderBy != "None") {
-                query = query.sort({ [orderBy]: ascending }); 
+                query = query.sort({ [orderBy]: ascending });
             }
-    
+
             const clients = await query.exec();
             const count = clients.length;
-    
+
             const paginatedClients = clients
                 .slice((page - 1) * limit, (page - 1) * limit + limit);
-    
+
             return res.status(200).json({
                 clients: paginatedClients,
                 totalPages: Math.ceil(count / limit),
