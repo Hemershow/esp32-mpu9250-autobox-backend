@@ -51,8 +51,7 @@ class ClientController {
             }
 
             const statusUpdateMessage = {
-                newClient: client,
-                datetime: client.lastUpdated
+                newClient: client
             }
 
             console.log(statusUpdateMessage)
