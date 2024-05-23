@@ -7,6 +7,14 @@ async function fillStatus() {
     try {
         const clients = await Client.find();
         const newClientStatus = clients.map((client) => {
+            const clientCopy = {
+                id: client.id,
+                plate: client.plate,
+                lastLocation: client.lastLocation,
+                lastUpdated: client.lastUpdated
+            };
+
+
             newStatus = {
                 id: client.id,
                 plate: client.plate,
@@ -15,7 +23,7 @@ async function fillStatus() {
                 notification: {
                     type: client.status != "Em Crise" ? "eventUpdate" : "",
                     data: {
-                        newClient: client
+                        newClient: clientCopy
                     }
                 },
             }
@@ -34,10 +42,18 @@ async function checkIfExpired() {
         if ((new Date().getTime() - new Date(client.lastUpdated).getTime() > 13000 || client.lastUpdated == undefined) &&
             client.notification.type == "eventUpdate") {
             client.lastUpdated = new Date();
+
+            const clientCopy = {
+                id: client.id,
+                plate: client.plate,
+                lastLocation: client.lastLocation,
+                lastUpdated: client.lastUpdated
+            };
+
             client.notification = {
                 type: "lostSignal",
                 data: {
-                    newClient: client
+                    newClient: clientCopy
                 }
             };
 
@@ -70,13 +86,21 @@ module.exports = {
         const allClients = getClientStatus();
         const updatedClients = allClients.map(client => {
             if (client.plate === notification.data.plate) {
-                client.lastUpdated = new Date(),
-                    client.notification = {
-                        type: "eventUpdate",
-                        data: {
-                            newClient: client
-                        }
-                    };
+                client.lastUpdated = new Date()
+
+                const clientCopy = {
+                    id: client.id,
+                    plate: client.plate,
+                    lastLocation: client.lastLocation,
+                    lastUpdated: client.lastUpdated
+                };
+
+                client.notification = {
+                    type: "eventUpdate",
+                    data: {
+                        newClient: clientCopy
+                    }
+                };
             }
             return client;
         });
