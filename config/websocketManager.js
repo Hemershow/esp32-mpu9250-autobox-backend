@@ -24,11 +24,24 @@ function sendMessageToAllClients(data) {
         return;
     }
 
+    const cache = new Set();
+    const dataString = JSON.stringify(data, function (key, value) {
+        if (typeof value === 'object' && value !== null) {
+            if (cache.has(value)) {
+                return;
+            }
+            cache.add(value);
+        }
+        return value;
+    });
+
     wss.clients.forEach(function each(client) {
         if (client.readyState === WebSocket.OPEN) {
             client.send(JSON.stringify(data));
         }
     });
+
+    cache.clear();
 }
 
 module.exports = { initializeWebSocketServer, sendMessageToAllClients };
