@@ -54,8 +54,6 @@ class ClientController {
                 newClient: client
             }
 
-            console.log(statusUpdateMessage)
-
             HostedService.notifyHostedService({ type: "locationUpdate", data: statusUpdateMessage })
 
             return res.status(200).send({ message: "Client updated successfully" });

@@ -15,8 +15,7 @@ async function fillStatus() {
                 notification: {
                     type: client.status != "Em Crise" ? "eventUpdate" : "",
                     data: {
-                        plate: client.plate,
-                        location: client.lastLocation,
+                        newClient: client
                     }
                 },
             }
@@ -38,8 +37,7 @@ async function checkIfExpired() {
             client.notification = {
                 type: "lostSignal",
                 data: {
-                    plate: client.plate,
-                    location: client.lastLocation,
+                    newClient: client
                 }
             };
 
@@ -69,25 +67,24 @@ setInterval(() => {
 
 module.exports = {
     notifyHostedService: async function doSomething(notification) {
-        const allClients = getClientStatus(); 
+        const allClients = getClientStatus();
         const updatedClients = allClients.map(client => {
             if (client.plate === notification.data.plate) {
                 client.lastUpdated = new Date(),
-                client.notification = {
-                    type: "eventUpdate",
-                    data: {
-                        plate: client.plate,
-                        location: client.lastLocation,
-                    }
-                };
+                    client.notification = {
+                        type: "eventUpdate",
+                        data: {
+                            newClient: client
+                        }
+                    };
             }
             return client;
         });
 
         updateClientStatus(updatedClients); // Update the status of all clients
 
-        const updatedClient = updatedClients.find(client => client.plate === notification.data.plate);
-        
+        const updatedClient = updatedClients.find(client => client.plate === notification.data.newClient.plate);
+
         await Client.findByIdAndUpdate(updatedClient.id, {
             lastLocation: updatedClient.lastLocation,
             status: "Rodando",
